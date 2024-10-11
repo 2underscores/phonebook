@@ -1,0 +1,23 @@
+GET http://localhost:3001/info
+
+###
+GET http://localhost:3001/api/persons
+
+###
+GET http://localhost:3001/api/persons/1
+
+###
+DELETE http://localhost:3001/api/persons/1
+
+###
+DELETE http://localhost:3001/api/persons/c5ea
+
+###
+POST http://localhost:3001/api/persons
+content-type: application/json
+
+{
+    // "name": "TestName1",
+    "name": "{{$randomInt 100 110}}",
+    "number": "{{$randomInt 04000000 04999999}}"
+}
