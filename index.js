@@ -1,6 +1,7 @@
 const express = require('express')
 const crypto = require('crypto')
 const morgan = require('morgan')
+const cors = require('cors')
 
 const app = express()
 
@@ -42,10 +43,13 @@ let personsData = [
   }
 ]
 
+// Middlewares
+app.use(cors({origin: 'http://localhost:5173',}))
 app.use(express.json())
 morgan.token('body', (req, res) => {return JSON.stringify(req.body)})
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
+// Endpoints
 app.get('/info', (req, res) => {
   res.send(`<p>Phonebook has info for ${personsData.length} people</p><p>${new Date()}</p>`)
 })
