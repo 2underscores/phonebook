@@ -43,8 +43,9 @@ let personsData = [
   }
 ]
 
-// Middlewares
-app.use(cors({origin: 'http://localhost:5173',}))
+// Middleware
+// app.use(cors({origin: 'http://localhost:5173',}))
+app.use(cors())
 app.use(express.json())
 morgan.token('body', (req, res) => {return JSON.stringify(req.body)})
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
@@ -75,22 +76,40 @@ const generateId = () => {
 const parsePerson = (p) => {
   if (!p.name) {return {status: 'bad', msg: 'Must contain name'}}
   if (!p.number) {return {status: 'bad', msg: 'Must contain number'}}
-  if (personsData.find(p2=>p2.name===p.name)) {return {status: 'bad', msg: 'Name already exists'}}
   return resp = {status: 'ok', person: p}
 }
 
 app.post('/api/persons', (req, res)=>{
-  console.log(req.body)
-  const id = generateId();
-  const parse = parsePerson(req.body)
-  if (parse.status === 'bad') {
-    console.log(parse)
-    res.status(400).json(parse)
+  const parsed = parsePerson(req.body)
+  if (parsed.status === 'bad') {
+    console.log(parsed)
+    res.status(400).json(parsed)
     return
   }
-  const person = {...parse.person, id:id}
-  personsData = personsData.concat(person) // TODO: Save to DB
-  res.json(person)
+  const personObj = {...parsed.person, ...{id: generateId()}}
+  if (personsData.find(p2=>p2.name===personObj.name || p2.id===personObj.id)) {
+    const result = {status: 'bad', msg: 'Name or ID already exists'}
+    console.log(personObj)
+    console.log(result)
+    res.status(400).json(result)
+    return
+  }
+  personsData = personsData.concat(personObj) // TODO: Save to DB
+  console.log('Created:', personObj)
+  res.json(personObj)
+})
+
+app.put('/api/persons/:id', (req, res)=>{
+  const parsed = parsePerson(req.body)
+  if (parsed.status === 'bad') {
+    console.log(parsed)
+    res.status(400).json(parsed)
+    return
+  }
+  const personObj = {...parsed.person, ...{id: req.params.id}}
+  personsData = personsData.map(p=>p.id===personObj.id ? personObj : p) // TODO: Delete DB
+  console.log('Updated:', personObj)
+  res.json(personObj)
 })
 
 app.delete('/api/persons/:id', (req, res)=>{
