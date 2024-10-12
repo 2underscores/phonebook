@@ -5,7 +5,12 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "fly deploy --no-deploy",
+    "deploy": "fly deploy",
+    "build:ui": "rm -rf dist && cd ../phonebook_fe/ && npm run build && cp -r dist ../phonebook_be/",
+    "deploy:full": "npm run build:ui && npm run deploy",
+    "logs:prod": "fly logs"
   },
   "author": "jeremy",
   "license": "ISC",

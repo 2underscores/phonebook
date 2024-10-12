@@ -46,6 +46,7 @@ let personsData = [
 // Middleware
 // app.use(cors({origin: 'http://localhost:5173',}))
 app.use(cors())
+app.use(express.static('dist'))
 app.use(express.json())
 morgan.token('body', (req, res) => {return JSON.stringify(req.body)})
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
