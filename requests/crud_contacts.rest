@@ -1,4 +1,4 @@
-@PERSON_ID=670c3152ef35a419d74f6108
+@PERSON_ID=670c3021c6200c2135324ccc
 ###
 GET http://{{baseApiUrl}}/info
 
@@ -9,7 +9,7 @@ GET http://{{baseApiUrl}}/persons
 GET http://{{baseApiUrl}}/persons/{{PERSON_ID}}
 
 ###
-GET http://{{baseApiUrl}}/persons/670c3152ef35a419d74f6109
+GET http://{{baseApiUrl}}/persons/670c3152ef35a419d74f61099
 
 ###
 DELETE http://{{baseApiUrl}}/persons/{{PERSON_ID}}
@@ -22,13 +22,13 @@ POST http://{{baseApiUrl}}/persons
 content-type: application/json
 
 {
-    "name": "Arto Hellass",
-    // "name": "{{$randomInt 100 110}}",
+    // "name": "Arto Hellass",
+    "name": "{{$randomInt 100 110}}",
     "number": "{{$randomInt 04000000 04999999}}"
 }
 
 ###
-PUT http://{{baseApiUrl}}/persons/670d89686ec6d04fbe39072a
+PUT http://{{baseApiUrl}}/persons/670d9b7415352d0b0b933ea1
 content-type: application/json
 
 {
