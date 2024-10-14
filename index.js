@@ -21,10 +21,6 @@ app.get('/info', (req, res, next) => {
   res.send(`<p>Phonebook has info for ${personsData.length} people</p><p>${new Date()}</p>`)
 })
 
-const generateId = () => {
-  return crypto.randomBytes(2).toString('hex');
-}
-
 const parsePerson = (p) => {
   if (!p.name) { return { error: 'ValidationError', status: 'bad', msg: 'Must contain name' } }
   if (!p.number) { return { error: 'ValidationError', status: 'bad', msg: 'Must contain number' } }
