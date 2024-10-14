@@ -13,7 +13,7 @@ const app = express()
 app.use(cors())
 app.use(express.static('dist'))
 app.use(express.json())
-morgan.token('body', (req, res) => {return JSON.stringify(req.body)})
+morgan.token('body', (req, res) => { return JSON.stringify(req.body) })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 // Endpoints & Methods
@@ -26,9 +26,9 @@ const generateId = () => {
 }
 
 const parsePerson = (p) => {
-  if (!p.name) {return {status: 'bad', msg: 'Must contain name'}}
-  if (!p.number) {return {status: 'bad', msg: 'Must contain number'}}
-  return resp = {status: 'ok', person: p}
+  if (!p.name) { return { status: 'bad', msg: 'Must contain name' } }
+  if (!p.number) { return { status: 'bad', msg: 'Must contain number' } }
+  return resp = { status: 'ok', person: p }
 }
 
 // Person CRUD endpoints
@@ -38,7 +38,41 @@ app.get('/api/persons', (req, res) => {
   })
 })
 
-app.get('/api/persons/:id', (req, res)=>{
+app.post('/api/persons', (req, res) => {
+  // Parse request with standard body
+  const parsed = parsePerson(req.body)
+  console.log('Attempting creation:', parsed.person);
+  if (parsed.status === 'bad') {
+    console.log(parsed)
+    res.status(400).json(parsed)
+    return
+  }
+  // If duplicate, error
+  const matchingPeople = Person.find({ // Should use countDocuments()
+    $or: [
+      { name: parsed.person.name },
+      { number: parsed.person.number }
+    ]})
+    .then(people => {
+      if (people.length > 0) {
+        console.log(`${people.length} Conflicts in DB:`, people)
+        res.status(400).json({ status: 'bad', msg: 'Name or number already exists' })
+        return Promise.reject('Duplicates')
+      } else {
+        const person = new Person(parsed.person)
+        return person.save()
+      }
+    })
+    .then(savedPerson => {
+      console.log('Saved:', savedPerson)
+      res.json(savedPerson)
+    })
+    .catch(err => {
+      console.log('Error:', err)
+    })
+})
+
+app.get('/api/persons/:id', (req, res) => {
   Person.findById(req.params.id)
     .then(person => {
       if (person) {
@@ -54,51 +88,28 @@ app.get('/api/persons/:id', (req, res)=>{
     })
 })
 
-app.post('/api/persons', (req, res)=>{
-  // Parse request with standard body
+app.put('/api/persons/:id', (req, res) => {
   const parsed = parsePerson(req.body)
   if (parsed.status === 'bad') {
     console.log(parsed)
     res.status(400).json(parsed)
     return
   }
-  const personObj = {...parsed.person, ...{id: generateId()}}
-  // If duplicate, error
-  if (personsData.find(p2=>p2.name===personObj.name || p2.id===personObj.id)) {
-    const result = {status: 'bad', msg: 'Name or ID already exists'}
-    console.log(personObj)
-    console.log(result)
-    res.status(400).json(result)
-    return
-  }
-  // Save to DB
-  personsData = personsData.concat(personObj)
-  console.log('Created:', personObj)
-  res.json(personObj)
-})
-
-app.put('/api/persons/:id', (req, res)=>{
-  const parsed = parsePerson(req.body)
-  if (parsed.status === 'bad') {
-    console.log(parsed)
-    res.status(400).json(parsed)
-    return
-  }
-  const personObj = {...parsed.person, ...{id: req.params.id}}
-  personsData = personsData.map(p=>p.id===personObj.id ? personObj : p) // TODO: Delete DB
+  const personObj = { ...parsed.person, ...{ id: req.params.id } }
+  personsData = personsData.map(p => p.id === personObj.id ? personObj : p) // TODO: Delete DB
   console.log('Updated:', personObj)
   res.json(personObj)
 })
 
-app.delete('/api/persons/:id', (req, res)=>{
+app.delete('/api/persons/:id', (req, res) => {
   const id = req.params.id;
-  const person = personsData.find(p=>p.id===id)
-  personsData = personsData.filter(p=>p.id!==id) // TODO: Delete DB
+  const person = personsData.find(p => p.id === id)
+  personsData = personsData.filter(p => p.id !== id) // TODO: Delete DB
   res.status(person ? 204 : 404).end()
 })
 
-app.use((req, res, next)=> {
-  res.status(404).json({error: 'Does not exist'})
+app.use((req, res, next) => {
+  res.status(404).json({ error: 'Does not exist' })
 })
 
 const PORT = process.env.PORT

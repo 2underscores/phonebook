@@ -22,7 +22,7 @@ POST http://{{baseApiUrl}}/persons
 content-type: application/json
 
 {
-    // "name": "TestName1",
-    "name": "{{$randomInt 100 110}}",
+    "name": "Arto Hellass",
+    // "name": "{{$randomInt 100 110}}",
     "number": "{{$randomInt 04000000 04999999}}"
 }
