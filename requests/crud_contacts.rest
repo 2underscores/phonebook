@@ -1,19 +1,24 @@
-GET http://localhost:3001/info
+@PERSON_ID=670c3152ef35a419d74f6108
+###
+GET http://{{baseApiUrl}}/info
 
 ###
-GET http://localhost:3001/api/persons
+GET http://{{baseApiUrl}}/persons
 
 ###
-GET http://localhost:3001/api/persons/1
+GET http://{{baseApiUrl}}/persons/{{PERSON_ID}}
 
 ###
-DELETE http://localhost:3001/api/persons/1
+GET http://{{baseApiUrl}}/persons/670c3152ef35a419d74f6109
 
 ###
-DELETE http://localhost:3001/api/persons/c5ea
+DELETE http://{{baseApiUrl}}/persons/{{PERSON_ID}}
 
 ###
-POST http://localhost:3001/api/persons
+DELETE http://{{baseApiUrl}}/persons/c5ea
+
+###
+POST http://{{baseApiUrl}}/persons
 content-type: application/json
 
 {

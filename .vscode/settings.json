@@ -1,0 +1,16 @@
+{
+    "rest-client.environmentVariables": {
+        "$shared": {
+            "basePath": "/api",
+        },
+        "local-jserver": {
+            "baseApiUrl": "localhost:3002",
+        },
+        "local-express": {
+            "baseApiUrl": "localhost:3001/api",
+        },
+        "production": {
+            "baseApiUrl": "localhost:3001/api",
+        }
+    }
+}
