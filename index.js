@@ -89,23 +89,32 @@ app.get('/api/persons/:id', (req, res) => {
 })
 
 app.put('/api/persons/:id', (req, res) => {
-  const parsed = parsePerson(req.body)
-  if (parsed.status === 'bad') {
-    console.log(parsed)
-    res.status(400).json(parsed)
-    return
-  }
-  const personObj = { ...parsed.person, ...{ id: req.params.id } }
-  personsData = personsData.map(p => p.id === personObj.id ? personObj : p) // TODO: Delete DB
-  console.log('Updated:', personObj)
-  res.json(personObj)
+  // const parsed = parsePerson(req.body)
+  // if (parsed.status === 'bad') {
+  //   console.log(parsed)
+  //   res.status(400).json(parsed)
+  //   return
+  // }
+  // const personObj = { ...parsed.person, ...{ id: req.params.id } }
+  // personsData = personsData.map(p => p.id === personObj.id ? personObj : p) // TODO: Delete DB
+  // console.log('Updated:', personObj)
+  // res.json(personObj)
 })
 
 app.delete('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  const person = personsData.find(p => p.id === id)
-  personsData = personsData.filter(p => p.id !== id) // TODO: Delete DB
-  res.status(person ? 204 : 404).end()
+  Person.findByIdAndDelete(req.params.id)
+    .then(result => {
+      if (result) {
+        console.log('Deleted:', result)
+        res.status(204).end()
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(error => {
+      console.log('Error:', error)
+      res.status(500).end()
+    })
 })
 
 app.use((req, res, next) => {

@@ -15,7 +15,7 @@ GET http://{{baseApiUrl}}/persons/670c3152ef35a419d74f6109
 DELETE http://{{baseApiUrl}}/persons/{{PERSON_ID}}
 
 ###
-DELETE http://{{baseApiUrl}}/persons/c5ea
+DELETE http://{{baseApiUrl}}/persons/670d896a6ec6d04fbe390730
 
 ###
 POST http://{{baseApiUrl}}/persons
