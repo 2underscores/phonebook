@@ -89,16 +89,25 @@ app.get('/api/persons/:id', (req, res) => {
 })
 
 app.put('/api/persons/:id', (req, res) => {
-  // const parsed = parsePerson(req.body)
-  // if (parsed.status === 'bad') {
-  //   console.log(parsed)
-  //   res.status(400).json(parsed)
-  //   return
-  // }
-  // const personObj = { ...parsed.person, ...{ id: req.params.id } }
-  // personsData = personsData.map(p => p.id === personObj.id ? personObj : p) // TODO: Delete DB
-  // console.log('Updated:', personObj)
-  // res.json(personObj)
+  const parsed = parsePerson(req.body)
+  if (parsed.status === 'bad') {
+    console.log(parsed)
+    res.status(400).json(parsed)
+    return
+  }
+  Person.findByIdAndUpdate(req.params.id, parsed.person, { new: true })
+    .then(updatedPerson => {
+      if (updatedPerson) {
+        console.log('Updated:', updatedPerson)
+        res.json(updatedPerson)
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(error => {
+      console.log('Error:', error)
+      res.status(500).end()
+    })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
