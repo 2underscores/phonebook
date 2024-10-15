@@ -1,6 +1,5 @@
 require('dotenv').config()
 const express = require('express')
-const crypto = require('crypto')
 const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/people')
@@ -13,19 +12,13 @@ const app = express()
 app.use(cors())
 app.use(express.static('dist'))
 app.use(express.json())
-morgan.token('body', (req, res, next) => { return JSON.stringify(req.body) })
+morgan.token('body', (req) => { return JSON.stringify(req.body) })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 // Endpoints & Methods
-app.get('/info', (req, res, next) => {
-  res.send(`<p>Phonebook has info for ${personsData.length} people</p><p>${new Date()}</p>`)
+app.get('/info', (req, res) => {
+  res.send(`<p>Phonebook has info for contacts</p><p>${new Date()}</p>`)
 })
-
-const parsePerson = (p) => {
-  if (!p.name) { return { error: 'ValidationError', status: 'bad', msg: 'Must contain name' } }
-  if (!p.number) { return { error: 'ValidationError', status: 'bad', msg: 'Must contain number' } }
-  return resp = { status: 'ok', person: p }
-}
 
 // Person CRUD endpoints
 app.get('/api/persons', (req, res, next) => {
@@ -41,7 +34,7 @@ app.post('/api/persons', (req, res, next) => {
   if (validation) {
     return next(validation)
   }
-  console.log('Attempting creation:', person.toJSON());
+  console.log('Attempting creation:', person.toJSON())
   person.save()
     .then(savedPerson => {
       console.log('Saved:', savedPerson)
@@ -54,7 +47,7 @@ app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
     .then(person => {
       if (person) {
-        console.log('Found:', person);
+        console.log('Found:', person)
         res.json(person)
       } else {
         next({ error: 'NotFound', msg: 'Person ID not found' })
@@ -90,20 +83,20 @@ app.delete('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error))
 })
 
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({ error: 'Path does not exist' })
 })
 
-errorHandler = (error, req, res, next) => {
+const errorHandler = (error, req, res, next) => {
   console.error(error)
   if (error.name === 'CastError') {
-    return res.status(400).json({ error: 'ValidationError', msg: "ID is invalid" })
+    return res.status(400).json({ error: 'ValidationError', msg: 'ID is invalid' })
   } else if (error.name === 'ValidationError') {
     return res.status(400).json({ error: 'ValidationError', msg: error.message })
   } else if (error.name === 'MongoServerError') {
     if (error.code === 11000) {
       return res.status(400).json({ error: 'Duplicate', msg: `Duplicated field: ${JSON.stringify(error.keyValue)}` })
-    } 
+    }
   }
   else if (error.error === 'NotFound') {
     return res.status(404).json(error)
