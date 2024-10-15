@@ -30,36 +30,19 @@ const parsePerson = (p) => {
 // Person CRUD endpoints
 app.get('/api/persons', (req, res, next) => {
   Person.find({})
-    .then(result => {res.json(result)})
+    .then(result => { res.json(result) })
     .catch(error => next(error))
 })
 
 app.post('/api/persons', (req, res, next) => {
-  // Parse request with standard body
-  const parsed = parsePerson(req.body)
-  if (parsed.status === 'bad') {
-    next(parsed)
-    return
+  // Parse (unnecessary, duplicated in DB save, but i don't like no API layer validation)
+  const person = new Person(req.body)
+  const validation = person.validateSync()
+  if (validation) {
+    return next(validation)
   }
-  console.log('Attempting creation:', parsed.person);
-  // If duplicate, error
-  const matchingPeople = Person.find( // Should use countDocuments()
-    {
-      $or: [
-        { name: parsed.person.name },
-        { number: parsed.person.number }
-      ]
-    })
-    .then(people => {
-      if (people.length > 0) {
-        console.log(`${people.length} Conflict(s) in DB:`, people)
-        next({ error: 'ValidationError', status: 'bad', msg: 'Name or number already exists' })
-        return
-      } else {
-        const person = new Person(parsed.person)
-        return person.save()
-      }
-    })
+  console.log('Attempting creation:', person.toJSON());
+  person.save()
     .then(savedPerson => {
       console.log('Saved:', savedPerson)
       res.json(savedPerson)
@@ -81,12 +64,8 @@ app.get('/api/persons/:id', (req, res, next) => {
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-  const parsed = parsePerson(req.body)
-  if (parsed.status === 'bad') {
-    next(parsed)
-    return
-  }
-  Person.findByIdAndUpdate(req.params.id, parsed.person, { new: true })
+  // Skip parsing, just use the model (Don't fight the framework)
+  Person.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
       if (updatedPerson) {
         console.log('Updated:', updatedPerson)
@@ -116,12 +95,17 @@ app.use((req, res, next) => {
 })
 
 errorHandler = (error, req, res, next) => {
-  console.error('Error: ', error)
+  console.error(error)
   if (error.name === 'CastError') {
-    return res.status(400).send({ error: 'malformatted id' })
-  } else if (error.error === 'ValidationError') {
-    return res.status(400).json(error)
-  } else if (error.error === 'NotFound') {
+    return res.status(400).json({ error: 'ValidationError', msg: "ID is invalid" })
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: 'ValidationError', msg: error.message })
+  } else if (error.name === 'MongoServerError') {
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Duplicate', msg: `Duplicated field: ${JSON.stringify(error.keyValue)}` })
+    } 
+  }
+  else if (error.error === 'NotFound') {
     return res.status(404).json(error)
   }
   console.log('Error unhandled. Fallback to default error handler')

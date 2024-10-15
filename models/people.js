@@ -10,8 +10,23 @@ mongoose.connect(MONGO_URI) // AS in HTTP server, never disconnect really
 
 const personSchema = new mongoose.Schema(
     {
-        name: String,
-        number: String,
+        name: {
+            type: String,
+            required: true,
+            unique: true, // NOT a validator - https://mongoosejs.com/docs/validation.html#the-code%3Eunique%3C/code%3E-option-is-not-a-validator
+            minLength: [ 3, 'Name must be at least 3 characters, is {VALUE} characters'],
+            maxLength: [30, 'Name must be less than 30 characters, is {VALUE} characters'],
+        },
+        number: {
+            type: String,
+            required: true,
+            validate: {
+                validator: (v) => {
+                    return v.replace(/[^0-9]/g, '').length >= 3 // Short for ezdev
+                },
+                message: props => `${props.value} is not a valid phone number!`
+            }
+        },
     },
     {
         toJSON: { // Parses outbound from JS
